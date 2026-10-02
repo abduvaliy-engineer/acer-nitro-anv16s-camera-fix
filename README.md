@@ -6,6 +6,22 @@ Newer kernels don't help.
 
 This repo has a one-line fix and scripts to apply and undo it.
 
+## Fixed in the Linux kernel
+
+The fix has been accepted into the kernel as a quirk for this model:
+[gpiolib: acpi: Ignore GPIO 11 interrupt on Acer Nitro V 16S AI](https://git.kernel.org/pub/scm/linux/kernel/git/andy/linux-gpio-intel.git/commit/?h=fixes&id=6da1f3437435c82eaa15b121022474bb358ffe20)
+(commit `6da1f3437435`, [mailing list discussion](https://lore.kernel.org/all/20261002101800.51506-1-abduvaliy.hbai@gmail.com/)).
+
+Once your distro ships a kernel that includes it, the camera works without the boot option below.
+Until then, use the boot option. Check whether your kernel already has the quirk:
+
+```
+journalctl -k -b | grep "Ignoring interrupt on pin 11"
+```
+
+If that line appears **without** the boot option in `/proc/cmdline`, your kernel has the fix and you
+can remove the option with `sudo ./uninstall.sh`. Keeping it does no harm either.
+
 ## The short version
 
 Add this to your kernel command line and reboot:
@@ -115,23 +131,31 @@ $ ls /dev/video*
   `CSC=1, CCS=0`: the camera was connected during boot and dropped off.
 - The parameter `gpiolib_acpi.ignore_interrupt` is in mainline Linux, so no custom kernel is needed.
 
-A permanent fix belongs in the kernel as a DMI quirk in `drivers/gpio/gpiolib-acpi-quirks.c`:
+The kernel fix ([commit `6da1f3437435`](https://git.kernel.org/pub/scm/linux/kernel/git/andy/linux-gpio-intel.git/commit/?h=fixes&id=6da1f3437435c82eaa15b121022474bb358ffe20))
+adds this DMI quirk to `drivers/gpio/gpiolib-acpi-quirks.c`, next to the existing one for the
+Acer Nitro V 14 on the same pin:
 
 ```c
 	{
 		/*
-		 * Acer Nitro ANV16S-41: GPIO 11 is the internal camera's power
-		 * enable and is also listed in _AEI with an empty handler.
+		 * GPIO 11 is the power enable of the internal USB camera.
+		 * The firmware drives it high but also lists it in _AEI with
+		 * an empty handler. Requesting it as an input turns the camera
+		 * off, so it never enumerates.
+		 * Found in BIOS V1.14
 		 */
 		.matches = {
 			DMI_MATCH(DMI_SYS_VENDOR, "Acer"),
-			DMI_MATCH(DMI_PRODUCT_NAME, "Nitro ANV16S-41"),
+			DMI_MATCH(DMI_PRODUCT_FAMILY, "Acer Nitro V 16S AI"),
 		},
 		.driver_data = &(struct acpi_gpiolib_dmi_quirk) {
 			.ignore_interrupt = "AMDI0030:00@11",
 		},
 	},
 ```
+
+The full ACPI dump of this laptop (BIOS V1.14) used for the kernel review is attached to the
+[acpidump-v1.14 release](https://github.com/abduvaliy-engineer/acer-nitro-anv16s-camera-fix/releases/tag/acpidump-v1.14).
 
 ## License
 
