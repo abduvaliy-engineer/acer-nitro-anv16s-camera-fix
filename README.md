@@ -52,36 +52,42 @@ blindly.
 
 ## Apply the fix
 
-### Omarchy (Limine boot loader)
-
 ```
-sudo ./omarchy/install.sh
+git clone https://github.com/abduvaliy-engineer/acer-nitro-anv16s-camera-fix
+cd acer-nitro-anv16s-camera-fix
+./install.sh --dry-run    # shows what it would change, changes nothing
+sudo ./install.sh
 ```
 
-The script takes a snapper snapshot, adds the option through `/etc/limine-entry-tool.d/`, rebuilds
-the boot images and confirms the option is in them. Reboot afterwards.
+Reboot afterwards, then run `./check.sh`.
+
+The script works out how your distro sets the kernel command line and uses that distro's own tool:
+
+| Your system has | Typical distros | What the script does |
+|---|---|---|
+| `limine-entry-tool` | Omarchy, CachyOS with Limine | adds a file to `/etc/limine-entry-tool.d/`, runs `limine-update` |
+| `kernelstub` | Pop!_OS | `kernelstub -a` |
+| `grubby` | Fedora, RHEL, Nobara | `grubby --update-kernel=ALL --args` |
+| `/etc/default/grub` | Ubuntu, Mint, Debian, Arch with GRUB, openSUSE | adds the option to `GRUB_CMDLINE_LINUX_DEFAULT`, regenerates the GRUB config |
+| `/etc/kernel/cmdline` | systemd-boot with unified kernel images | adds the option, rebuilds the kernel images |
+| `/boot/loader/entries/` | plain systemd-boot | adds the option to each entry's `options` line |
+| `/boot/refind_linux.conf` | rEFInd | adds the option to each line |
+
+Before editing a file it saves a copy next to it ending in `.bak-camera-fix`. If snapper is set up,
+it also takes a snapshot first. It refuses to run on other laptop models unless you pass `--force`.
 
 To undo it:
 
 ```
-sudo ./omarchy/uninstall.sh
+sudo ./uninstall.sh
 ```
 
-### GRUB (Ubuntu, Fedora, Mint, most other distros)
+### Doing it by hand
 
-1. Open `/etc/default/grub` as root.
-2. Add `gpiolib_acpi.ignore_interrupt=AMDI0030:00@11` inside the quotes of
-   `GRUB_CMDLINE_LINUX_DEFAULT`.
-3. Rebuild the config: `sudo update-grub` on Ubuntu/Mint/Debian, or
-   `sudo grub2-mkconfig -o /boot/grub2/grub.cfg` on Fedora.
-4. Reboot.
-
-To undo it, remove the option again and repeat steps 3 and 4.
-
-### systemd-boot
-
-Add the option to the `options` line of your entry in `/boot/loader/entries/`, or to
-`/etc/kernel/cmdline` if your distro builds unified kernel images, then reboot.
+If the script can't recognise your setup, add `gpiolib_acpi.ignore_interrupt=AMDI0030:00@11` to the
+kernel command line with your boot loader's usual method and reboot. On GRUB, for example: add it
+inside the quotes of `GRUB_CMDLINE_LINUX_DEFAULT` in `/etc/default/grub`, then run `sudo update-grub`
+(Ubuntu, Mint, Debian) or `sudo grub2-mkconfig -o /boot/grub2/grub.cfg` (Fedora).
 
 ## Confirm it worked
 
