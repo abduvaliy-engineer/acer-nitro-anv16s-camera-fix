@@ -37,6 +37,11 @@ $ lsusb | grep 0408
 Bus 003 Device 002: ID 0408:4035 Quanta Computer, Inc. ACER HD User Facing
 ```
 
+Tested and working on:
+
+- Omarchy (Arch Linux), Limine boot loader
+- Ubuntu, GRUB boot loader
+
 ## What is going on
 
 The camera is a normal USB webcam. Linux already has the driver for it (`uvcvideo`). The problem is
