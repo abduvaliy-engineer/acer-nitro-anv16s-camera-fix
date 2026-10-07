@@ -1,14 +1,15 @@
-# Acer Nitro ANV16S-41: internal camera fix for Linux
+# Acer Nitro ANV16S-41 / AN16S-61: internal camera fix for Linux
 
-On the Acer Nitro ANV16S-41 (Ryzen 7 260, BIOS V1.14) the built-in camera works on Windows but is
-missing on Linux. `lsusb` doesn't list it, there is no `/dev/video0`, and no camera app can find it.
+On the Acer Nitro ANV16S-41 (Ryzen 7 260) and Nitro AN16S-61 (Ryzen AI, Krackan) the built-in
+camera works on Windows but is missing on Linux. `lsusb` doesn't list it, there is no `/dev/video0`, and no camera app can find it.
 Newer kernels don't help.
 
 This repo has a one-line fix and scripts to apply and undo it.
 
 ## Fixed in the Linux kernel
 
-The fix has been accepted into the kernel as a quirk for this model:
+The fix has been accepted into the kernel as a quirk for the ANV16S-41 (the AN16S-61 is not covered
+by it yet, so it still needs the boot option):
 [gpiolib: acpi: Ignore GPIO 11 interrupt on Acer Nitro V 16S AI](https://git.kernel.org/pub/scm/linux/kernel/git/andy/linux-gpio-intel.git/commit/?h=fixes&id=6da1f3437435c82eaa15b121022474bb358ffe20)
 (commit `6da1f3437435`, [mailing list discussion](https://lore.kernel.org/all/20261002101800.51506-1-abduvaliy.hbai@gmail.com/)).
 
@@ -39,8 +40,12 @@ Bus 003 Device 002: ID 0408:4035 Quanta Computer, Inc. ACER HD User Facing
 
 Tested and working on:
 
-- Omarchy (Arch Linux), Limine boot loader
-- Ubuntu, GRUB boot loader
+| Laptop | BIOS | Distro | Notes |
+|---|---|---|---|
+| Nitro ANV16S-41 (Ryzen 7 260) | V1.14 | Omarchy (Limine), Ubuntu (GRUB) | camera `0408:4035` |
+| Nitro AN16S-61 (Ryzen AI, Krackan) | V1.53 | Omarchy (Limine) | camera `0408:4059`; also fixes the internal microphone |
+
+Not affected (camera works without the fix): Nitro ANV16-42.
 
 ## What is going on
 
@@ -64,8 +69,8 @@ you lose is an event whose handler was empty anyway.
 Run `./check.sh`. It prints your laptop model, whether the camera is on the USB bus, and whether the
 fix is active. You need all of these for this fix to apply:
 
-- the model is `Nitro ANV16S-41`
-- `lsusb` has no `0408:4035` device
+- the model is `Nitro ANV16S-41` or `Nitro AN16S-61`
+- `lsusb` has no `0408:4035` (ANV16S-41) or `0408:4059` (AN16S-61) device
 - the boot log has no `ACER HD User Facing` line
 
 Other Acer models may have the same problem on a different pin. Don't apply this fix to them
@@ -95,7 +100,7 @@ The script works out how your distro sets the kernel command line and uses that 
 | `/boot/refind_linux.conf` | rEFInd | adds the option to each line |
 
 Before editing a file it saves a copy next to it ending in `.bak-camera-fix`. If snapper is set up,
-it also takes a snapshot first. It refuses to run on other laptop models unless you pass `--force`.
+it also takes a snapshot first. It refuses to run on untested laptop models unless you pass `--force`.
 
 To undo it:
 

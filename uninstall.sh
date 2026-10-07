@@ -1,5 +1,5 @@
 #!/bin/bash
-# Remove the Acer Nitro ANV16S-41 camera fix from the kernel command line.
+# Remove the Acer Nitro camera fix from the kernel command line.
 #
 #   sudo ./uninstall.sh
 #   ./uninstall.sh --dry-run

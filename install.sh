@@ -1,15 +1,16 @@
 #!/bin/bash
-# Add the Acer Nitro ANV16S-41 camera fix to the kernel command line.
+# Add the Acer Nitro camera fix (ANV16S-41, AN16S-61) to the kernel command line.
 # Works out which boot setup the system uses and changes it the way that setup expects.
 #
 #   sudo ./install.sh            apply the fix
 #   ./install.sh --dry-run       only show what would be changed
-#   sudo ./install.sh --force    apply on a model other than the ANV16S-41
+#   sudo ./install.sh --force    apply on a model that hasn't been tested
 set -euo pipefail
 
 PARAM="gpiolib_acpi.ignore_interrupt=AMDI0030:00@11"
 LIMINE_DROPIN=/etc/limine-entry-tool.d/zz-acer-camera-gpio11.conf
-MODEL="Nitro ANV16S-41"
+# Models the fix has been tested on (DMI product name)
+MODELS=("Nitro ANV16S-41" "Nitro AN16S-61")
 
 DRY_RUN=0
 FORCE=0
@@ -70,8 +71,10 @@ rebuild_images() {
 }
 
 model=$(cat /sys/class/dmi/id/product_name 2>/dev/null || true)
-if [ "$model" != "$MODEL" ] && ((!FORCE)); then
-  say "This laptop is \"${model:-unknown}\", not the $MODEL."
+supported=0
+for m in "${MODELS[@]}"; do [[ "$model" == *"${m#Nitro }"* ]] && supported=1; done
+if ((!supported)) && ((!FORCE)); then
+  say "This laptop is \"${model:-unknown}\". The fix was only tested on: ${MODELS[*]}."
   say "The fix may be wrong for it. Use --force to apply anyway."
   exit 1
 fi
@@ -94,7 +97,7 @@ if [ -d /etc/limine-entry-tool.d ] && command -v limine-update >/dev/null; then
   if ((DRY_RUN)); then
     say "  would write $LIMINE_DROPIN"
   else
-    printf '# Acer Nitro ANV16S-41 camera fix\nKERNEL_CMDLINE[default]+=" %s"\n' "$PARAM" > "$LIMINE_DROPIN"
+    printf '# Acer Nitro camera fix\nKERNEL_CMDLINE[default]+=" %s"\n' "$PARAM" > "$LIMINE_DROPIN"
   fi
   run limine-update
 
