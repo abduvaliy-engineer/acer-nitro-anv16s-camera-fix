@@ -47,6 +47,10 @@ Tested and working on:
 
 Not affected (camera works without the fix): Nitro ANV16-42.
 
+Tried it on another laptop? Please report it in the
+[tested laptops discussion](https://github.com/abduvaliy-engineer/acer-nitro-anv16s-camera-fix/discussions/1),
+whether it worked or not.
+
 ## What is going on
 
 The camera is a normal USB webcam. Linux already has the driver for it (`uvcvideo`). The problem is
