@@ -45,7 +45,7 @@ Tested and working on:
 | Nitro ANV16S-41 (Ryzen 7 260) | V1.14 | Omarchy (Limine), Ubuntu (GRUB) | camera `0408:4035` |
 | Nitro AN16S-61 (Ryzen AI, Krackan) | V1.53 | Omarchy (Limine) | camera `0408:4059`; also fixes the internal microphone |
 
-Not affected (camera works without the fix): Nitro ANV16-42.
+Not affected (camera works without the fix): Nitro ANV16-42, Nitro ANV16-41.
 
 Tried it on another laptop? Please report it in the
 [tested laptops discussion](https://github.com/abduvaliy-engineer/acer-nitro-anv16s-camera-fix/discussions/1),
