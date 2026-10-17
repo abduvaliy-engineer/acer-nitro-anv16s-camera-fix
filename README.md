@@ -74,7 +74,7 @@ Run `./check.sh`. It prints your laptop model, whether the camera is on the USB 
 fix is active. You need all of these for this fix to apply:
 
 - the model is `Nitro ANV16S-41` or `Nitro AN16S-61`
-- `lsusb` has no `0408:4035` (ANV16S-41) or `0408:4059` (AN16S-61) device
+- `lsusb` has no `0408:4035` (ANV16S-41) or `0408:4059` / `04f2:b831` (AN16S-61) device
 - the boot log has no `ACER HD User Facing` line
 
 Other Acer models may have the same problem on a different pin. Don't apply this fix to them

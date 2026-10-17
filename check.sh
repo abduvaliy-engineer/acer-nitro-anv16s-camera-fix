@@ -15,8 +15,12 @@ else
   echo "Fix: not active"
 fi
 
-if lsusb 2>/dev/null | grep -qE '0408:(4035|4059)'; then
+# Known internal cameras: Quanta 0408:4035 / 0408:4059, Chicony 04f2:b831.
+# Also match the "User Facing" name in case Acer ships another vendor.
+cam=$(lsusb 2>/dev/null | grep -iE '0408:(4035|4059)|04f2:b831|User Facing' | head -n1)
+if [[ -n $cam ]]; then
   echo "Camera: found on USB"
+  echo "  ${cam#*ID }"
   ls /dev/video* 2>/dev/null | sed 's/^/  /'
 else
   echo "Camera: not found on USB"
